@@ -33,6 +33,16 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <!-- Goodix fingerprint tunnel -->
+    <hal format="hidl">
+        <name>vendor.xiaomi.hardware.fx.tunnel</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IMiFxTunnel</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
     <!-- fpc fingerprint HAL Service  -->
     <hal format="hidl">
         <name>com.fingerprints.extension</name>

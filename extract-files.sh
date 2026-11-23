@@ -9,7 +9,7 @@
 
 set -e
 
-DEVICE=alioth
+DEVICE=munch
 VENDOR=xiaomi
 
 # Load extract utilities and do some sanity checks.
@@ -58,6 +58,12 @@ function blob_fixup() {
     case "${1}" in
         vendor/lib64/camera/components/com.mi.node.watermark.so )
             $PATCHELF --add-needed "libpiex_shim.so" "${2}"
+            ;;
+        vendor/lib64/vendor.qti.hardware.camera.postproc@1.0-service-impl.so )
+            $SIGSCAN -p "9A 0A 00 94" -P "1F 20 03 D5" -f "${2}"
+            ;;
+        vendor/lib64/libxmi_high_dynamic_range_cdsp.so )
+            llvm-strip --strip-debug "${2}"
             ;;
         vendor/lib/libstagefright_soft_ac4dec.so | vendor/lib/libstagefright_soft_ddpdec.so | vendor/lib/libstagefright_soft_qtiflacdec.so | vendor/lib/libstagefrightdolby.so | vendor/lib64/libdlbdsservice.so | vendor/lib64/libstagefright_soft_ac4dec.so | vendor/lib64/libstagefright_soft_ddpdec.so | vendor/lib64/libstagefrightdolby.so)
             "${PATCHELF}" --replace-needed "libstagefright_foundation.so" "libstagefright_foundation-v33.so" "${2}"

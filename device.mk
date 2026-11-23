@@ -57,6 +57,13 @@ PRODUCT_VENDOR_PROPERTIES += \
     ro.vendor.audio.soundfx.usb=true \
     ro.vendor.audio.support.sound.id=true \
     ro.vendor.audio.us.proximity=true \
+    ro.vendor.audio.dump.mixer=false \
+    ro.vendor.audio.feature.fade=true \
+    ro.vendor.audio.game.effect=true \
+    ro.vendor.audio.multiroute=true \
+    ro.vendor.audio.shortvideo.index=80 \
+    ro.vendor.audio.voice.volume.boost=none \
+    vendor.audio.lowpower=true \
     ro.vendor.audio.us.type=mius \
     ro.vendor.audio.zoom.support=true \
     ro.vendor.audio.zoom.type=1 \
@@ -73,11 +80,16 @@ PRODUCT_ODM_PROPERTIES += \
     vendor.audio.feature.spkr_prot.enable=false \
     vendor.audio.hal.output.suspend.supported=false \
     vendor.audio.offload.multiple.enabled=true \
-    vendor.audio.offload.track.enable=false
+    vendor.audio.offload.track.enable=false \
+    vendor.audio.offload.buffer.size.kb=256
+
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.config.media_vol_default=8 \
+    ro.config.media_vol_steps=25 \
+    ro.config.vc_call_vol_default=9
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/audio/mixer_paths_overlay_static.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_overlay_static.xml \
-    $(LOCAL_PATH)/configs/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/audio_policy_configuration.xml
+    $(call find-copy-subdir-files,*,$(LOCAL_PATH)/configs/audio/,$(TARGET_COPY_OUT_VENDOR)/etc)
 
 PRODUCT_PACKAGES += \
     XiaomiDolby
@@ -118,6 +130,9 @@ PRODUCT_PACKAGES += \
     android.hardware.boot@1.2-service
 
 # Camera
+PRODUCT_SYSTEM_PROPERTIES += \
+    vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera
+
 PRODUCT_VENDOR_PROPERTIES += \
     camera.disable_zsl_mode=true
 
@@ -128,7 +143,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/camera/camxoverridesettings.txt:$(TARGET_COPY_OUT_VENDOR)/etc/camera/camxoverridesettings.txt \
     $(LOCAL_PATH)/configs/camera/st_license.lic:$(TARGET_COPY_OUT_VENDOR)/etc/camera/st_license.lic
 
 PRODUCT_PACKAGES += \
@@ -174,14 +188,15 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.set_display_power_timer_ms=1000 \
     ro.surface_flinger.use_content_detection_for_refresh_rate=true
 
-PRODUCT_COPY_FILES += \
-    $(call find-copy-subdir-files,*,$(LOCAL_PATH)/configs/display/,$(TARGET_COPY_OUT_VENDOR)/etc)
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/displayconfig/display_id_4630946736638489729.xml:$(TARGET_COPY_OUT_VENDOR)/etc/displayconfig/display_id_4630946736638489729.xml
+# Doze
+PRODUCT_SYSTEM_EXT_PROPERTIES += \
+    ro.sensor.pickup=xiaomi.sensor.pickup \
+    ro.sensor.pickup.lower.value=2
 
 # DPM
 PRODUCT_VENDOR_PROPERTIES += \
+    persist.vendor.dpm.feature=1 \
+    persist.vendor.dpm.nsrm.bkg.evt=3955 \
     persist.vendor.dpmhalservice.enable=1
 
 # DRM
@@ -196,9 +211,13 @@ PRODUCT_PACKAGES += \
     fastbootd
 
 # Fingerprint
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.hardware.fp.vendor=fpc,goodix \
+    ro.hardware.fp.sideCap=true
+
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/fingerprint/uinput-fpc.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/uinput-fpc.kl \
-    $(LOCAL_PATH)/configs/fingerprint/uinput-fpc.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/uinput-fpc.idc \
+    $(call find-copy-subdir-files,*,$(LOCAL_PATH)/configs/idc/,$(TARGET_COPY_OUT_VENDOR)/usr/idc) \
+    $(LOCAL_PATH)/configs/keylayout/gpio-keys.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/gpio-keys.kl \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
 
 # FRP
@@ -221,12 +240,13 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PACKAGES += \
     fstab.qcom \
-    init.alioth.rc \
+    init.munch.rc \
+    init.munch.perf.rc \
     init.mi.btmac.sh \
     init.mi.usb.sh \
     init.qti.dcvs.sh \
     init.target.rc \
-    ueventd.alioth.rc
+    ueventd.munch.rc
 
 # Keymaster
 PRODUCT_VENDOR_PROPERTIES += \
@@ -255,40 +275,49 @@ PRODUCT_SOONG_NAMESPACES += \
     hardware/xiaomi
 
 # NFC
-PRODUCT_COPY_FILES += \
-    $(call find-copy-subdir-files,*,$(LOCAL_PATH)/configs/nfc/,$(TARGET_COPY_OUT_VENDOR)/etc)
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.boot.hardware.sku=munch
 
 # Overlays
 PRODUCT_PACKAGES += \
-    AliothCarrierConfig \
-    AliothFrameworks \
-    AliothNfc \
-    AliothSettings \
-    AliothSystemUI \
-    AOSPAAliothFrameworks \
-    AOSPAAliothSystemUI \
-    SettingsOverlayM2012K11AG \
-    SettingsOverlayM2012K11AI \
-    SettingsProviderM2012K11AC \
-    SettingsProviderM2012K11AG \
-    SettingsProviderM2012K11AI \
-    WifiOverlayM2012K11AC \
-    WifiOverlayM2012K11AG \
-    WifiOverlayM2012K11AI
+    MunchCarrierConfig \
+    MunchFrameworks \
+    MunchNfc \
+    MunchSettings \
+    MunchSystemUI \
+    AOSPAMunchFrameworks \
+    AOSPAMunchSystemUI \
+    SettingsOverlay22021211RG \
+    SettingsOverlay22021211RI \
+    SettingsProvider22021211RC \
+    SettingsProvider22021211RG \
+    SettingsProvider22021211RI \
+    WifiOverlay22021211RC \
+    WifiOverlay22021211RG \
+    WifiOverlay22021211RI
 
 # Partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
+
+# Perf
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/perf/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
 
 # Platform
 TARGET_BOARD_PLATFORM := kona
 
 # QCRIL
 PRODUCT_VENDOR_PROPERTIES += \
-    persist.vendor.radio.cdma_cap=true \
+    persist.vendor.radio.atfwd.start=true \
     persist.vendor.radio.data_con_rprt=1 \
     persist.vendor.radio.data_ltd_sys_ind=1 \
+    persist.vendor.radio.dynamic_sar=1 \
+    persist.vendor.radio.enable_temp_dds=true \
     persist.vendor.radio.force_ltd_sys_ind=1 \
-    persist.vendor.radio.manual_nw_rej_ct=1
+    persist.vendor.radio.force_on_dc=true \
+    persist.vendor.radio.manual_nw_rej_ct=1 \
+    persist.vendor.radio.sib16_support=1 \
+    persist.vendor.radio.ucdetect.usb=true
 
 # QTI
 TARGET_COMMON_QTI_COMPONENTS := \
@@ -299,18 +328,19 @@ TARGET_COMMON_QTI_COMPONENTS := \
     bt \
     charging \
     display \
+    dsprpcd \
     gps \
     init \
+    keymaster \
     media \
     nfc \
     overlay \
     perf \
+    qseecomd \
     telephony \
     usb \
     wfd \
     wlan
-
-TARGET_NFC_SKU := pro
 
 # Sensors
 PRODUCT_VENDOR_PROPERTIES += \
@@ -328,9 +358,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.proximity.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.proximity.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepcounter.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepdetector.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepdetector.xml
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
 
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl-xiaomi \
@@ -368,7 +395,7 @@ PRODUCT_PACKAGES += \
     update_verifier
 
 # Vendor
-$(call inherit-product, vendor/xiaomi/alioth/alioth-vendor.mk)
+$(call inherit-product, vendor/xiaomi/munch/munch-vendor.mk)
 
 # Verified Boot
 PRODUCT_COPY_FILES += \
@@ -394,7 +421,7 @@ PRODUCT_COPY_FILES += \
 
 # WLAN
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/wlan/WCNSS_qcom_cfg_qca6390.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
+    $(LOCAL_PATH)/configs/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
 
 # WFD
 PRODUCT_PACKAGES += \
